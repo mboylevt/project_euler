@@ -12,8 +12,3 @@ def gen_primes(start, limit):
             primes.append(i)
 
     return primes
-
-start = 1000
-limit = 10000
-
-primes = gen_primes(start, limit)
