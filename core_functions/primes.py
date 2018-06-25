@@ -1,7 +1,7 @@
 import math
 
 
-def gen_primes_slow(limit):
+def gen_primes_slow(limit=1000000):
     primes = []
     for i in range(2, limit):
         is_prime = True
