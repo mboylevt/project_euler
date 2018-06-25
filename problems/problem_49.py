@@ -1,9 +1,10 @@
+import bisect
 from core_functions import primes
 
-start = 1000
 limit = 10000
 
-prime_list = primes.gen_primes(start, limit)
+prime_list = primes.gen_primes(limit)
+prime_list = prime_list[bisect.bisect_right(prime_list,1000):]
 
 for i in prime_list:
     for j in prime_list:
