@@ -1,6 +1,6 @@
-from core_functions import basic_math
+from core_functions import series_generators
 
-fib = basic_math.fibonocci()
+fib = series_generators.fibonocci()
 fib_value = next(fib)
 total = 0
 while fib_value < 4000000:
