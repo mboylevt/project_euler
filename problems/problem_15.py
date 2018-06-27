@@ -1,0 +1,1 @@
+# This is a simple nCr calculation, where 2n C n == 40 C 20 == 137846528820
