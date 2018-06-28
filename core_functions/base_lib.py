@@ -22,3 +22,4 @@ def get_abundant_numbers(limit):
         if get_sum_of_divisors(test_number) > test_number:
             abundant_numbers.append(test_number)
     return abundant_numbers
+
