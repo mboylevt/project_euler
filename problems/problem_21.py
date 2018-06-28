@@ -8,12 +8,6 @@ def get_sum_of_divisors(divisors):
 
 amicable_numbers = set()
 
-sum_a = get_sum_of_divisors(base_lib.get_divisors(220))
-sum_b = get_sum_of_divisors(base_lib.get_divisors(284))
-
-print(str(sum_a))
-print(str(sum_b))
-
 for i in range(220,9999):
     divisors_a = base_lib.get_divisors(i)
     sum_a = get_sum_of_divisors(divisors_a)
