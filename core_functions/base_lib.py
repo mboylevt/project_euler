@@ -16,6 +16,7 @@ def get_sum_of_divisors(number):
             d_sum += i
     return d_sum
 
+
 def get_abundant_numbers(limit):
     abundant_numbers = []
     for test_number in range(0,limit+1):
