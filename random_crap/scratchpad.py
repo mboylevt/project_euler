@@ -2,8 +2,6 @@ import base64
 import json
 
 import requests
-
-# api_url = 'https://api.qa3.nyc.shapeways.net'
 api_url = 'https://api.shapeways.com'
 # Authenticate and get a bearer token
 
@@ -19,39 +17,39 @@ response = requests.post(url=api_url+auth_url, data=auth_post_data, auth=(client
 access_token = response.json()['access_token']
 print("Access token: " + access_token)
 
-# #Hit a pubic URL
-# materials_url = '/materials/v1'
-# headers = {
-#     'Authorization': 'Bearer ' + access_token
-# }
-# response = requests.get(url=api_url+materials_url, headers=headers)
-# print(response.json()['materials'])
-# #
-# # Hit a private URL
-# models_url = '/models/v1'
-# response = requests.get(url=api_url+models_url+'?page=1', headers=headers)
-# print(response.json()['models'])
-#
+#Hit a pubic URL
+materials_url = '/materials/v1'
+headers = {
+    'Authorization': 'Bearer ' + access_token
+}
+response = requests.get(url=api_url+materials_url, headers=headers)
+print(response.json()['materials'])
+
+# Hit a private URL
+models_url = '/models/v1'
+response = requests.get(url=api_url+models_url+'?page=1', headers=headers)
+print(response.json()['models'])
+
 # Upload a model
-# models_url = '/models/v1'
-# headers = {
-#     'Authorization': 'Bearer ' + access_token
-#
-# }
-# with open('cube.stl', 'rb') as model_file:
-#     model_file_data = model_file.read()
-#
-# model_upload_post_data = {
-#     'fileName': 'cube.stl',
-#     'file': base64.b64encode(model_file_data).decode('utf-8'),
-#     'description': 'Someone call a doctor, because this cube is SIIIICK.',
-#     'hasRightsToModel': 1,
-#     'acceptTermsAndConditions': 1
-# }
-#
-# response = requests.post(url=api_url+models_url, headers=headers, data=json.dumps(model_upload_post_data))
-# print("******")
-# print(json.dumps(response.json(), indent=4, sort_keys=True))
+models_url = '/models/v1'
+headers = {
+    'Authorization': 'Bearer ' + access_token
+
+}
+with open('cube.stl', 'rb') as model_file:
+    model_file_data = model_file.read()
+
+model_upload_post_data = {
+    'fileName': 'cube.stl',
+    'file': base64.b64encode(model_file_data).decode('utf-8'),
+    'description': 'Someone call a doctor, because this cube is SIIIICK.',
+    'hasRightsToModel': 1,
+    'acceptTermsAndConditions': 1
+}
+
+response = requests.post(url=api_url+models_url, headers=headers, data=json.dumps(model_upload_post_data))
+print("******")
+print(json.dumps(response.json(), indent=4, sort_keys=True))
 
 # Order a model
 model_id = 7892229
