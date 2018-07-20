@@ -5,6 +5,8 @@ import requests
 AUTH_URL = '/oauth2/token'
 MATERIALS_URL = '/materials/v1'
 MODEL_URL = '/model/v1'
+ORDER_URL = '/orders/v1'
+
 
 class ShapewaysOauth2Client():
     """
@@ -37,9 +39,11 @@ class ShapewaysOauth2Client():
         print(response.content)
         return False
 
-    def _execute_get(self, url, **params):
-        response = requests.get(url=url, **params)
-        content = response.json()
+    def _validate_response(self, content):
+        """
+        Internal function - validate results
+        :rtype: list()
+        """
         try:
             if content['result'] == 'success':
                 return content
@@ -47,6 +51,26 @@ class ShapewaysOauth2Client():
                 raise RuntimeError(content)
         except:
             raise RuntimeError(content)
+
+    def _execute_get(self, url, **params):
+        """
+        Internal function - execute get request and validate
+        :param url:
+        :param params:
+        :rtype: list()
+        """
+        response = requests.get(url=url, **params)
+        return self._validate_response(response.json())
+
+    def _execute_post(self, url, **params):
+        """
+        Internal function - execute get request and validate
+        :param url:
+        :param params:
+        :rtype: list()
+        """
+        response = requests.post(url=url, **params)
+        return self._validate_response(response.json())
 
     def get_materials(self):
         """
@@ -79,9 +103,69 @@ class ShapewaysOauth2Client():
         headers = {
             'Authorization': 'Bearer ' + self.access_token
         }
-        response = requests.get(url=self.api_url + MODEL_URL + '?page=' + str(page_count), headers=headers)
-        content = response.json()
-        if content['result'] == 'success':
-            return response.json()['models']
-        else:
-            raise RuntimeError(content)
+        content = self._execute_get(url=self.api_url + MODEL_URL + '?page=' + str(page_count), headers=headers)
+        return content['models']
+
+    def upload_model(self, path_to_model):
+        """
+        Upload a model to Shapeways
+
+        :param path_to_model: path to model on your local filesystem
+        :type path_to_model: str
+        :return:
+        """
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        with open(path_to_model, 'rb') as model_file:
+            model_file_data = model_file.read()
+
+        model_upload_post_data = {
+            'fileName': 'cube.stl',
+            'file': base64.b64encode(model_file_data).decode('utf-8'),
+            'description': 'Someone call a doctor, because this cube is SIIIICK.',
+            'hasRightsToModel': 1,
+            'acceptTermsAndConditions': 1
+        }
+
+        content = self._execute_post(url=self.api_url + MODEL_URL, headers=headers, data=json.dumps(model_upload_post_data))
+        return content
+
+    def order_model(self, model_id, material_id, payment_verification_id):
+        """
+        Order a model.
+
+        :type model_id: int
+        :type material_id: int
+        :type payment_verification_id: str
+        :return:
+        """
+
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token
+        }
+
+        items = [{
+            'materialId': material_id,
+            'modelId': model_id,
+            'quantity': 1
+        }]
+
+        order_data = {
+            'items': items,
+            'firstName': 'my',
+            'lastName': 'dude',
+            'country': 'US',
+            'state': 'NY',
+            'city': 'New York',
+            'address1': '419 Park Ave South',
+            'address2': '9th Floor',
+            'zipCode': '10016',
+            'phoneNumber': '1234567890',
+            'paymentVerificationId': payment_verification_id,
+            'paymentMethod': 'credit_card',
+            'shippingOption': 'Cheapest'
+        }
+
+        content = self._execute_post(url=self.api_url + ORDER_URL, headers=headers, data=json.dumps(order_data))
+        return content
