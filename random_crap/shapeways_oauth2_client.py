@@ -4,7 +4,9 @@ import requests
 
 AUTH_URL = '/oauth2/token'
 MATERIALS_URL = '/materials/v1'
+SINGLE_MATERIAL_URL = '/materials/{material_id}/v1'
 MODEL_URL = '/model/v1'
+SINGLE_MODEL_URL = '/model/{model_id}/v1'
 ORDER_URL = '/orders/v1'
 CART_URL = '/orders/cart/v1'
 
@@ -87,13 +89,25 @@ class ShapewaysOauth2Client():
 
     def get_materials(self):
         """
-        Use your bearer token to retrieve our material list
+        Get our material list
 
         :return: list of materials
         :rtype: list()
         """
         content = self._execute_get(url=self.api_url + MATERIALS_URL)
         return content['materials']
+
+    def get_single_material(self, material_id):
+        """
+        Get information on a single material.
+
+        :param material_id: material to query
+        :type material_id: int
+        :return:
+        """
+        material_url = SINGLE_MATERIAL_URL.format(material_id=material_id)
+        content = self._execute_get(self.api_url + material_url)
+        return content
 
     def get_models(self, page_count=1):
         """
@@ -104,6 +118,18 @@ class ShapewaysOauth2Client():
         """
         content = self._execute_get(url=self.api_url + MODEL_URL + '?page=' + str(page_count))
         return content['models']
+
+    def get_single_model(self, model_id):
+        """
+        Get information for a single model
+
+        :type model_id: int
+
+        :return: model information for a single model
+        """
+        model_url = MODEL_URL.format(model_id=model_id)
+        content = self._execute_get(self.api_url + model_url)
+        return content
 
     def upload_model(self, path_to_model):
         """
