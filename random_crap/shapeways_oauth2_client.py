@@ -71,6 +71,22 @@ class ShapewaysOauth2Client():
         response = requests.get(url=url, headers=headers, **params)
         return self._validate_response(response.json())
 
+    def _execute_delete(self, url, **params):
+        """
+        Internal function - execute get request and validate
+        :param url:
+        :param params:
+        :rtype: list()
+        """
+        if not self.access_token:
+            raise RuntimeError("Access token not defined: be sure to call .authenticate() first!")
+
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        response = requests.delete(url=url, headers=headers, **params)
+        return self._validate_response(response.json())
+
     def _execute_post(self, url, **params):
         """
         Internal function - execute get request and validate
@@ -129,6 +145,21 @@ class ShapewaysOauth2Client():
         """
         model_url = MODEL_URL.format(model_id=model_id)
         content = self._execute_get(self.api_url + model_url)
+        return content
+
+    def delete_model(self, model_id):
+        """
+        Delete a model by ID
+
+        :param model_id: model to delete
+        :type model_id: int
+        :return:
+        """
+        model_delete_data = {
+            'modelId': model_id
+        }
+        model_url = SINGLE_MODEL_URL.format(model_id=model_id)
+        content = self._execute_delete(self.api_url + model_url, data=json.dumps(model_delete_data))
         return content
 
     def upload_model(self, path_to_model):
