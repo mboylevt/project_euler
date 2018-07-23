@@ -6,6 +6,7 @@ AUTH_URL = '/oauth2/token'
 MATERIALS_URL = '/materials/v1'
 MODEL_URL = '/model/v1'
 ORDER_URL = '/orders/v1'
+CART_URL = '/orders/cart/v1'
 
 
 class ShapewaysOauth2Client():
@@ -59,7 +60,13 @@ class ShapewaysOauth2Client():
         :param params:
         :rtype: list()
         """
-        response = requests.get(url=url, **params)
+        if not self.access_token:
+            raise RuntimeError("Access token not defined: be sure to call .authenticate() first!")
+
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        response = requests.get(url=url, headers=headers, **params)
         return self._validate_response(response.json())
 
     def _execute_post(self, url, **params):
@@ -69,7 +76,13 @@ class ShapewaysOauth2Client():
         :param params:
         :rtype: list()
         """
-        response = requests.post(url=url, **params)
+        if not self.access_token:
+            raise RuntimeError("Access token not defined: be sure to call .authenticate() first!")
+
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        response = requests.post(url=url, headers=headers, **params)
         return self._validate_response(response.json())
 
     def get_materials(self):
@@ -79,14 +92,7 @@ class ShapewaysOauth2Client():
         :return: list of materials
         :rtype: list()
         """
-
-        if not self.access_token:
-            raise RuntimeError("Access token not defined: be sure to call .authenticate() first!")
-
-        headers = {
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        content = self._execute_get(url=self.api_url + MATERIALS_URL, headers=headers)
+        content = self._execute_get(url=self.api_url + MATERIALS_URL)
         return content['materials']
 
     def get_models(self, page_count=1):
@@ -96,14 +102,7 @@ class ShapewaysOauth2Client():
         :return: list of materials
         :rtype: list()
         """
-
-        if not self.access_token:
-            raise RuntimeError("Access token not defined: be sure to call .authenticate() first!")
-
-        headers = {
-            'Authorization': 'Bearer ' + self.access_token
-        }
-        content = self._execute_get(url=self.api_url + MODEL_URL + '?page=' + str(page_count), headers=headers)
+        content = self._execute_get(url=self.api_url + MODEL_URL + '?page=' + str(page_count))
         return content['models']
 
     def upload_model(self, path_to_model):
@@ -114,9 +113,7 @@ class ShapewaysOauth2Client():
         :type path_to_model: str
         :return:
         """
-        headers = {
-            'Authorization': 'Bearer ' + self.access_token
-        }
+
         with open(path_to_model, 'rb') as model_file:
             model_file_data = model_file.read()
 
@@ -128,7 +125,31 @@ class ShapewaysOauth2Client():
             'acceptTermsAndConditions': 1
         }
 
-        content = self._execute_post(url=self.api_url + MODEL_URL, headers=headers, data=json.dumps(model_upload_post_data))
+        content = self._execute_post(url=self.api_url + MODEL_URL, data=json.dumps(model_upload_post_data))
+        return content
+
+    def get_cart(self):
+        """
+        Get the current contents of a cart
+
+        :return:
+        """
+        content = self._execute_get(self.api_url + CART_URL)
+        return content
+
+    def add_to_cart(self, model_id, material_id, quantity=1):
+        """
+        Add a model to the cart.
+
+        :param model_id:
+        :return:
+        """
+        add_to_cart_data = {
+            'modelId': model_id,
+            'materialId': material_id,
+            'quantity': quantity
+        }
+        content = self._execute_post(self.api_url + CART_URL, data=json.dumps(add_to_cart_data))
         return content
 
     def order_model(self, model_id, material_id, payment_verification_id, first_name, last_name, country, city,
@@ -141,11 +162,6 @@ class ShapewaysOauth2Client():
         :type payment_verification_id: str
         :return:
         """
-
-        headers = {
-            'Authorization': 'Bearer ' + self.access_token
-        }
-
         items = [{
             'materialId': material_id,
             'modelId': model_id,
@@ -168,5 +184,5 @@ class ShapewaysOauth2Client():
             'shippingOption': 'Cheapest'
         }
 
-        content = self._execute_post(url=self.api_url + ORDER_URL, headers=headers, data=json.dumps(order_data))
+        content = self._execute_post(url=self.api_url + ORDER_URL, data=json.dumps(order_data))
         return content
