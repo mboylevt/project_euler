@@ -131,7 +131,8 @@ class ShapewaysOauth2Client():
         content = self._execute_post(url=self.api_url + MODEL_URL, headers=headers, data=json.dumps(model_upload_post_data))
         return content
 
-    def order_model(self, model_id, material_id, payment_verification_id):
+    def order_model(self, model_id, material_id, payment_verification_id, first_name, last_name, country, city,
+                    address1, address2, zip_code, phone_number, state=None):
         """
         Order a model.
 
@@ -153,15 +154,15 @@ class ShapewaysOauth2Client():
 
         order_data = {
             'items': items,
-            'firstName': 'my',
-            'lastName': 'dude',
-            'country': 'US',
-            'state': 'NY',
-            'city': 'New York',
-            'address1': '419 Park Ave South',
-            'address2': '9th Floor',
-            'zipCode': '10016',
-            'phoneNumber': '1234567890',
+            'firstName': first_name,
+            'lastName': last_name,
+            'country': country,
+            'state': state,
+            'city': city,
+            'address1': address1,
+            'address2': address2,
+            'zipCode': zip_code,
+            'phoneNumber': phone_number,
             'paymentVerificationId': payment_verification_id,
             'paymentMethod': 'credit_card',
             'shippingOption': 'Cheapest'
