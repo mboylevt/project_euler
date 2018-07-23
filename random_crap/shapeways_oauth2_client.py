@@ -10,7 +10,8 @@ SINGLE_MODEL_URL = '/model/{model_id}/v1'
 CATEGORIES_ENDPOINT = '/categories/v1'
 SINGLE_CATEGORY_ENDPOINT = '/categories/{category_id}/v1'
 CART_URL = '/orders/cart/v1'
-ORDER_URL = '/orders/v1'
+ORDERS_URL = '/orders/v1'
+SINGLE_ORDER_URL = '/orders/{order_id}/v1'
 
 
 class ShapewaysOauth2Client():
@@ -80,7 +81,7 @@ class ShapewaysOauth2Client():
 
     def _execute_delete(self, url, **params):
         """
-        Internal function - execute get request and validate
+        Internal function - execute delete request and validate
         :param url:
         :param params:
         :rtype: list()
@@ -96,7 +97,7 @@ class ShapewaysOauth2Client():
 
     def _execute_post(self, url, **params):
         """
-        Internal function - execute get request and validate
+        Internal function - execute post request and validate
         :param url:
         :param params:
         :rtype: list()
@@ -108,6 +109,22 @@ class ShapewaysOauth2Client():
             'Authorization': 'Bearer ' + self.access_token
         }
         response = requests.post(url=url, headers=headers, **params)
+        return self._validate_response(response.json())
+
+    def _execute_put(self, url, **params):
+        """
+        Internal function - execute put request and validate
+        :param url:
+        :param params:
+        :rtype: list()
+        """
+        if not self.access_token:
+            raise RuntimeError("Access token not defined: be sure to call .authenticate() first!")
+
+        headers = {
+            'Authorization': 'Bearer ' + self.access_token
+        }
+        response = requests.put(url=url, headers=headers, **params)
         return self._validate_response(response.json())
 
     # Materials Management Endpoints
@@ -243,6 +260,30 @@ class ShapewaysOauth2Client():
         return content
 
     # Order management endpoints
+    def get_orders(self):
+        """
+        Get a list of orders
+
+        :return:
+        """
+        content = self._execute_get(self.api_url + ORDERS_URL)
+        return content
+
+    def get_single_order(self, order_id):
+        """
+        Get a single order
+
+        :param order_id: order to get
+        :type order_id: int
+        :return:
+        """
+        order_data = {
+            'orderId': order_id
+        }
+        order_url = SINGLE_ORDER_URL.format(order_id=order_id)
+        content = self._execute_get(self.api_url+order_url, data=json.dumps(order_data))
+        return content
+
     def order_model(self, model_id, material_id, payment_verification_id, first_name, last_name, country, city,
                     address1, address2, zip_code, phone_number, state=None):
         """
@@ -275,5 +316,21 @@ class ShapewaysOauth2Client():
             'shippingOption': 'Cheapest'
         }
 
-        content = self._execute_post(url=self.api_url + ORDER_URL, data=json.dumps(order_data))
+        content = self._execute_post(url=self.api_url + ORDERS_URL, data=json.dumps(order_data))
+        return content
+
+    def cancel_order(self, order_id):
+        """
+        Cancel an order
+
+        :param order_id: order to cancel
+        :type order_id: int
+        :return:
+        """
+        order_data = {
+            'orderId': order_id,
+            'status': 'cancelled'
+        }
+        order_url = SINGLE_ORDER_URL.format(order_id=order_id)
+        content = self._execute_put(self.api_url+order_url, data=json.dumps(order_data))
         return content
