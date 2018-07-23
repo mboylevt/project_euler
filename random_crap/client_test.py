@@ -15,4 +15,7 @@ sw_api.authenticate(client_id, client_secret)
 # print(json.dumps(sw_api.get_materials(), indent=4, sort_keys=True))
 # print(json.dumps(sw_api.get_models(), indent=4, sort_keys=True))
 # print(json.dumps(sw_api.upload_model('cube.stl'), indent=4, sort_keys=True))
-print(json.dumps(sw_api.delete_model(model_id=7904295), indent=4, sort_keys=True))
+# print(json.dumps(sw_api.delete_model(model_id=7904295), indent=4, sort_keys=True))
+# print(json.dumps(sw_api.get_categories(), indent=4, sort_keys=True))
+print(json.dumps(sw_api.get_single_category(category_id=80), indent=4, sort_keys=True))
+

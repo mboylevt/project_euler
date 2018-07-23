@@ -7,8 +7,10 @@ MATERIALS_URL = '/materials/v1'
 SINGLE_MATERIAL_URL = '/materials/{material_id}/v1'
 MODEL_URL = '/model/v1'
 SINGLE_MODEL_URL = '/model/{model_id}/v1'
-ORDER_URL = '/orders/v1'
+CATEGORIES_ENDPOINT = '/categories/v1'
+SINGLE_CATEGORY_ENDPOINT = '/categories/{category_id}/v1'
 CART_URL = '/orders/cart/v1'
+ORDER_URL = '/orders/v1'
 
 
 class ShapewaysOauth2Client():
@@ -21,6 +23,7 @@ class ShapewaysOauth2Client():
         if not api_url:
             self.api_url = 'https://api.shapeways.com'
 
+    # Oauth2 authentication method
     def authenticate(self, client_id, client_secret):
         """
         Authenticate your application and retrieve a bearer token
@@ -42,11 +45,15 @@ class ShapewaysOauth2Client():
         print(response.content)
         return False
 
-    def _validate_response(self, content):
+    # Internal wrapper functions to make endpoint code easier to read and less repetitive
+    def _validate_response(self, response):
         """
         Internal function - validate results
         :rtype: list()
         """
+        if response.status_code != 200:
+            raise RuntimeError("Call threw status {}".format(response.status_code))
+        content = response.json()
         try:
             if content['result'] == 'success':
                 return content
@@ -69,7 +76,7 @@ class ShapewaysOauth2Client():
             'Authorization': 'Bearer ' + self.access_token
         }
         response = requests.get(url=url, headers=headers, **params)
-        return self._validate_response(response.json())
+        return self._validate_response(response)
 
     def _execute_delete(self, url, **params):
         """
@@ -103,6 +110,7 @@ class ShapewaysOauth2Client():
         response = requests.post(url=url, headers=headers, **params)
         return self._validate_response(response.json())
 
+    # Materials Management Endpoints
     def get_materials(self):
         """
         Get our material list
@@ -125,6 +133,7 @@ class ShapewaysOauth2Client():
         content = self._execute_get(self.api_url + material_url)
         return content
 
+    # Model Management Endpoints
     def get_models(self, page_count=1):
         """
         Use your bearer token to retrieve a list of your models
@@ -185,6 +194,30 @@ class ShapewaysOauth2Client():
         content = self._execute_post(url=self.api_url + MODEL_URL, data=json.dumps(model_upload_post_data))
         return content
 
+    # Category management endpoints
+    def get_categories(self):
+        """
+        Get a list of all categories
+
+        :return:
+        """
+        content = self._execute_get(self.api_url + CATEGORIES_ENDPOINT)
+        return content
+
+    def get_single_category(self, category_id):
+        """
+        Get information on a single category
+        :type category_id: int
+        :return:
+        """
+        category_data = {
+            'categoryId': category_id
+        }
+        category_url = SINGLE_CATEGORY_ENDPOINT.format(category_id=category_id)
+        content = self._execute_get(url=self.api_url+category_url, data=json.dumps(category_data))
+        return content
+
+    # Cart management endpoints
     def get_cart(self):
         """
         Get the current contents of a cart
@@ -209,6 +242,7 @@ class ShapewaysOauth2Client():
         content = self._execute_post(self.api_url + CART_URL, data=json.dumps(add_to_cart_data))
         return content
 
+    # Order management endpoints
     def order_model(self, model_id, material_id, payment_verification_id, first_name, last_name, country, city,
                     address1, address2, zip_code, phone_number, state=None):
         """
